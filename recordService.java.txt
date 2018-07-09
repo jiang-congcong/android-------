@@ -1,0 +1,86 @@
+//使用MediaRecorder类实现录音
+
+源码：
+
+package com.example.test_6application;
+
+import android.app.Service;
+import android.content.Intent;
+import android.media.MediaRecorder;
+import android.os.IBinder;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class recordService extends Service {
+    private File recordFile;
+
+    // 录音类
+    private MediaRecorder mediaRecorder;
+
+
+    public recordService() {
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        // TODO: Return the communication channel to the service.
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
+
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
+        SimpleDateFormat formatter  = new  SimpleDateFormat    ("yyyy年MM月dd日    HH:mm:ss     ");
+        Date curDate  =  new  Date(System.currentTimeMillis());//获取当前时间
+        String  str  = formatter.format(curDate);
+        // recordFile = new File("/sdcard", "kk.amr");
+        recordFile = new File("/sdcard/"+"_"+str+".3gp");
+
+        mediaRecorder = new MediaRecorder();
+        // 判断，若当前文件已存在，则删除
+        if (recordFile.exists()) {
+            recordFile.delete();
+        }
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);//设置音频输入源 ,麦克风
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT); //设置音频输出格式   three_gpp
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);//设置音频编码方式   amr_nb
+        mediaRecorder.setOutputFile(recordFile.getAbsolutePath());
+
+        try {
+            // 准备好开始录音
+            mediaRecorder.prepare();
+
+            mediaRecorder.start();
+        } catch (IllegalStateException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+
+
+    @Override
+    public void onDestroy() {
+        if (recordFile != null) {
+            mediaRecorder.stop();
+            mediaRecorder.release();
+        }
+
+        super.onDestroy();
+    }
+}
